@@ -1,0 +1,134 @@
+library(MASS)
+library(rpart)
+library(ggplot2)
+
+#### Get working directory
+getwd()
+
+#### Change working directory
+setwd("/Users/lanen/Desktop/RUTSOM201905DATA2/Projects/FinalProject/NBA_MachineLearning/NBA_MachineLearning/static/data")
+
+data <- read.csv("NBA_ALL.csv",TRUE,",")
+class(data)
+##### Review data
+head(data)
+View(data)
+
+---
+
+
+##### Review data structure
+str(data)
+
+##### Summarize the data set
+summary(data$event_type)
+summary(data$minutes_remaining)
+summary(data$shot_distance)
+summary(data$shot_type)
+summary(data$shot_zone_basic)
+summary(data$shot_zone_range)
+
+sd(data$shot_distance)
+sd(data$minutes_remaining)
+sd(data$points)
+
+##### Change flag to value easily understood
+data$shot_made_flag <- ifelse(test=data$shot_made_flag == 0, yes="Missed",no="Made")
+
+#### Convert shot_made_flag from int to factor
+data$shot_made_flag <- as.factor(data$shot_made_flag)
+
+#### Confirm updates
+str(data)
+
+##### Review data
+head(data)
+
+#### Ensure data set is balanced
+xtabs(~ player_name+action_type, data=data)
+xtabs(~ minutes_remaining + shot_made_flag, data=data)
+xtabs(~ shot_distance + points, data=data)
+xtabs(~ minutes_remaining + points, data=data)
+
+
+
+##### test and train
+set.seed(10000)
+ind <- sample(2, nrow(data),replace=TRUE, prob = c(0.8,0.02))
+train <- data[ind==1,]
+test <- data[ind==2,]
+head(train)
+head(test)
+
+####linear regression model
+##shot distance / points made
+results <- lm(points~shot_distance,train)
+summary(results)
+termplot(results)
+
+results <- lm(points~shot_distance,test)
+summary(results)
+termplot(results)
+
+
+
+#### prediction
+pred <- predict(results,data)
+head(pred)
+
+
+
+
+#### Logistic Regression 
+#### shot distance to predict if the shot was made 
+logistic11 <- glm(shot_made_flag ~ shot_distance, data=data, family="binomial")
+summary(logistic11)
+
+#### shot distance to predict points made 
+logistic2 <- glm(shot_made_flag ~ shot_distance + minutes_remaining, data=data, family="binomial")
+summary(logistic2)
+
+####  remaining to predict if the shot was made 
+logistic <- glm(shot_made_flag ~ minutes_remaining, data=data, family="binomial")
+summary(logistic)
+
+#### minutes remaining to points made 
+logistic3 <- glm(shot_made_flag ~ loc_y , data=data, family="binomial")
+summary(logistic3)
+
+####  remaining to predict if the shot was made 
+logistic <- glm(shot_made_flag ~ minutes_remaining, data=data, family="binomial")
+summary(logistic)
+
+
+
+
+
+
+
+
+####linear regression model
+##shot distance / points made
+plot(data$shot_distance,data$minutes_remaining)
+cor(data$shot_distance,data$minutes_remaining)
+
+plot(data$points,data$shot_distance)
+cor(data$points,data$shot_distance)
+results <- lm(points~shot_distance,data)
+summary(results)
+
+#### prediction
+pred <- predict(results,data)
+head(pred)
+
+
+
+
+
+
+
+
+
+
+
+
